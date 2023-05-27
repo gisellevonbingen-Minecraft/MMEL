@@ -1,0 +1,84 @@
+apply plugin: "java"
+apply plugin: "eclipse"
+apply plugin: "maven-publish"
+
+version = "${plugin_version}"
+group = "${maven_group}"
+archivesBaseName = "${archives_base_name}"
+
+sourceCompatibility = JavaVersion.VERSION_17
+targetCompatibility = JavaVersion.VERSION_17
+java.toolchain.languageVersion = JavaLanguageVersion.of(17)
+println "Java: ${System.getProperty "java.version"}, JVM: ${System.getProperty "java.vm.version"} (${System.getProperty "java.vendor"}), Arch: ${System.getProperty "os.arch"}"
+
+tasks.withType(JavaCompile) {
+    options.encoding = "UTF-8"
+    options.release = 17
+}
+
+java {
+    withSourcesJar()
+}
+
+repositories {
+    maven {
+        url "https://hub.spigotmc.org/nexus/content/repositories/snapshots/"
+    }
+    maven {
+        url "https://repo.papermc.io/repository/maven-public/"
+    }
+    maven {
+        url "https://oss.sonatype.org/content/repositories/snapshots/"
+    }
+    maven {
+        url "https://repo.skriptlang.org/releases/"
+    }
+}
+
+dependencies {
+    compileOnly "org.spigotmc:spigot-api:${mc_version}-${spigot_version}-SNAPSHOT"
+    compileOnly(platform("com.intellectualsites.bom:bom-1.18.x:1.27"))
+    implementation files("libs/EffectLib-9.0.jar")
+    implementation files("libs/MythicMobs-5.2.6.jar")
+}
+
+def resourceTargets = ["plugin.yml"]
+def intoTargets = ["$rootDir/out/production/resources/", "$rootDir/out/production/${project.name}.main/", "$rootDir/${project.name}/bin/main/"]
+def replaceProperties = [mc_version: mc_version,
+    plugin_version: plugin_version, plugin_name: plugin_name, plugin_description: plugin_description, plugin_license: plugin_license, plugin_homepage: plugin_homepage, plugin_source: plugin_source, plugin_issues: plugin_issues
+]
+
+processResources {
+    inputs.properties replaceProperties
+    replaceProperties.put "project", project
+
+    filesMatching(resourceTargets) {
+        expand replaceProperties
+    }
+
+    intoTargets.each { target ->
+        if (file(target).exists()) {
+            copy {
+                from(sourceSets.main.resources) {
+                    include resourceTargets
+                    expand replaceProperties
+                }
+                into target
+            }
+        }
+    }
+}
+
+jar {
+    manifest {
+        attributes([
+                "Specification-Title"     : "skfaweplace",
+                "Specification-Vendor"    : "gisellevonbingen",
+                "Specification-Version"   : "1",
+                "Implementation-Title"    : project.name,
+                "Implementation-Version"  : project.jar.archiveVersion,
+                "Implementation-Vendor"   : "gisellevonbingen",
+                "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")
+        ])
+    }
+}

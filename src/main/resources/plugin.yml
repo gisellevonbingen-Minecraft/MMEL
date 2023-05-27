@@ -1,0 +1,20 @@
+name: ${plugin_name}
+main: giselle.mmel.MythicMobsEffectLib
+version: ${plugin_version}
+api-version: 1.13
+depend: [ MythicMobs, EffectLib ]
+website: ${plugin_homepage}
+description: ${plugin_description}
+authors: [ Gisellevonbingen ]
+database: false
+commands:
+  mmel:
+    description: MythicMobsEffectLib
+    usage: |
+      /el reload: Reload all effects
+      /el list {page}: Show all effects
+      /el play {effect}: Play effect to self
+    permission: ${plugin_name}.commands.mmel
+permissions:
+  "${plugin_name}.commands.mmel":
+    default: op
